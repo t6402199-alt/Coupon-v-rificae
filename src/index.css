@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+body {
+  background-color: #0b0c15;
+  color: #f1f2f6;
+  font-family: var(--font-sans);
+}
+
+/* Floating custom animation for background cards */
+@keyframes float {
+  0% { transform: translateY(0px) rotate(0deg); opacity: 0.15; }
+  50% { transform: translateY(-40px) rotate(180deg); opacity: 0.3; }
+  100% { transform: translateY(0px) rotate(360deg); opacity: 0.15; }
+}
+
+.animate-float-slow {
+  animation: float 20s infinite ease-in-out;
+}
+.animate-float-slower {
+  animation: float 28s infinite ease-in-out;
+}
+
