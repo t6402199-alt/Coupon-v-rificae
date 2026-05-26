@@ -28,7 +28,6 @@ export default function CouponForm() {
     nom: "",
     email: "",
     code: "",
-    type: "Carte Cadeau",
     brand: "amazon",
     autreCouponText: "",
     montant: "",
@@ -42,10 +41,6 @@ export default function CouponForm() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const selectBrand = (id: string) => {
-    setFormData(prev => ({ ...prev, brand: id }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,10 +64,6 @@ export default function CouponForm() {
       setError("Veuillez spécifier le montant.");
       return;
     }
-    if (!formData.type) {
-      setError("Veuillez sélectionner le type de code (Coupon ou Carte Cadeau).");
-      return;
-    }
 
     setLoading(true);
 
@@ -82,16 +73,12 @@ export default function CouponForm() {
       submissionData.append("nom", formData.nom.trim());
       submissionData.append("email", formData.email.trim());
       submissionData.append("code", formData.code.toUpperCase().trim());
-      submissionData.append("type", formData.type);
       
-      // Add Brand context if relevant
-      if (formData.type === "Carte Cadeau") {
-        const selectedBrandLabel = BRAND_PRESETS.find(b => b.id === formData.brand)?.label || formData.brand;
-        if (formData.brand === "autres" && formData.autreCouponText.trim()) {
-          submissionData.append("marque_carte", `${selectedBrandLabel} (${formData.autreCouponText.trim()})`);
-        } else {
-          submissionData.append("marque_carte", selectedBrandLabel);
-        }
+      const selectedBrandLabel = BRAND_PRESETS.find(b => b.id === formData.brand)?.label || formData.brand;
+      if (formData.brand === "autres" && formData.autreCouponText.trim()) {
+        submissionData.append("type_de_coupon", `Autre (${formData.autreCouponText.trim()})`);
+      } else {
+        submissionData.append("type_de_coupon", selectedBrandLabel);
       }
 
       if (formData.montant.trim()) {
@@ -232,20 +219,23 @@ export default function CouponForm() {
             {/* General Card/Code Type details */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label htmlFor="type" className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                  <Tag className="w-3.5 h-3.5 text-slate-500" />
-                  Type de code <span className="text-rose-500">*</span>
+                <label htmlFor="brand" className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                  <CreditCard className="w-3.5 h-3.5 text-slate-500" />
+                  Type de coupon <span className="text-rose-500">*</span>
                 </label>
                 <select
-                  id="type"
-                  name="type"
+                  id="brand"
+                  name="brand"
                   required
-                  value={formData.type}
+                  value={formData.brand}
                   onChange={handleInputChange}
                   className="w-full bg-black/45 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-all font-medium"
                 >
-                  <option value="Carte Cadeau" className="bg-slate-950">Carte Cadeau ou Recharge</option>
-                  <option value="Coupon" className="bg-slate-950">Coupon de réduction</option>
+                  {BRAND_PRESETS.map(brand => (
+                    <option key={brand.id} value={brand.id} className="bg-slate-950">
+                      {brand.emoji} {brand.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -267,41 +257,8 @@ export default function CouponForm() {
               </div>
             </div>
 
-            {/* Display Brands if "Carte Cadeau" is selected */}
-            {formData.type === "Carte Cadeau" && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="space-y-3 overflow-hidden"
-              >
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                  <CreditCard className="w-3.5 h-3.5 text-slate-500" />
-                  Sélectionnez le type de Recharge / Carte
-                </label>
-                
-                <div className="grid grid-cols-3 gap-2">
-                  {BRAND_PRESETS.map(brand => (
-                    <button
-                      key={brand.id}
-                      type="button"
-                      onClick={() => selectBrand(brand.id)}
-                      className={`p-3 rounded-xl border text-center transition flex flex-col items-center gap-1.5 cursor-pointer select-none ${
-                        formData.brand === brand.id 
-                          ? `bg-indigo-600/10 border-indigo-500/70 shadow-lg shadow-indigo-600/5`
-                          : "bg-black/30 border-white/5 hover:border-white/10 hover:bg-black/45"
-                      }`}
-                    >
-                      <span className="text-xl">{brand.emoji}</span>
-                      <span className="text-[10px] font-bold text-slate-200">{brand.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
             {/* Optional other brand custom field (Including iTunes, Google Play and others!) */}
-            {formData.brand === "autres" && formData.type === "Carte Cadeau" && (
+            {formData.brand === "autres" && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
@@ -309,7 +266,7 @@ export default function CouponForm() {
                 className="space-y-1.5 overflow-hidden"
               >
                 <label htmlFor="autreCouponText" className="text-xs font-bold uppercase tracking-wider text-pink-400">
-                  Écrivez le nom de votre Carte <span className="text-rose-500">*</span>
+                  Écrivez le nom de votre Coupon / Carte <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
